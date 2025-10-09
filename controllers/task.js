@@ -22,4 +22,39 @@ const getAllTasks = async (req, res) => {
   }
 };
 
-module.exports = { createTask, getAllTasks };
+const updateTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { taskName } = req.body;
+    const task = await Task.findByIdAndUpdate(id, { taskName }, { new: true });
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+    res
+      .status(200)
+      .json({ message: "Task updated successfully", updatedTask: task });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error Updating Task", error: error.message });
+  }
+};
+
+const deleteTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const task = await Task.findByIdAndDelete(id);
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+    res
+      .status(200)
+      .json({ message: "Task deleted successfully", deletedTask: task });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error Deleting Task", error: error.message });
+  }
+};
+
+module.exports = { createTask, getAllTasks, updateTask , deleteTask};
