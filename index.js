@@ -1,6 +1,7 @@
 const express = require("express");
 const { connectDB } = require("./connection");
-const userRoutes = require("./routes/user");
+const { config } = require("dotenv");
+const authRoutes = require("./routes/auth");
 const taskRoutes = require("./routes/task");
 const adminRoutes = require("./routes/admin");
 
@@ -18,8 +19,9 @@ connectDB("mongodb://localhost:27017/crud-data")
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.use("/api/task", taskRoutes);
-app.use("/auth", userRoutes);
+app.use("/auth", authRoutes);
+app.use("/tasks", taskRoutes);
 app.use("/admin", adminRoutes);
 
+require("dotenv", config());
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
