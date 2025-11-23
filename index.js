@@ -1,9 +1,18 @@
 const express = require("express");
 const { connectDB } = require("./connection");
-const { config } = require("dotenv");
 const authRoutes = require("./routes/auth");
 const taskRoutes = require("./routes/task");
 const adminRoutes = require("./routes/admin");
+const {
+  testMiddleware,
+  testMiddleware2,
+} = require("./middleware/testMiddleware");
+const {
+  checkForAuthentication,
+  userOnly,
+} = require("./middleware/authMiddleware");
+require("dotenv").config();
+
 
 const app = express();
 const PORT = 3000;
@@ -20,8 +29,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use("/auth", authRoutes);
-app.use("/tasks", taskRoutes);
+app.use("/tasks", checkForAuthentication, userOnly, taskRoutes);
 app.use("/admin", adminRoutes);
 
-require("dotenv", config());
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));

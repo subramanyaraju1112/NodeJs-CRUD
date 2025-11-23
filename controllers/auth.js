@@ -1,17 +1,17 @@
 const User = require("../models/users");
 const generateToken = require("../utils/generateToken");
 
-const handleSignUp = async (req, res) => {
+const handleSignUpUser = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
-    if ((!username, !email, !password)) {
+    const { username, email, password, role } = req.body;
+    if ((!username, !email, !password, !role)) {
       return res.status(400).json({ message: "All Fields Required" });
     }
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     } else {
-      await User.create({ username, email, password });
+      await User.create({ username, email, password, role });
       return res.status(201).json({ message: "Account created successfully" });
     }
   } catch (error) {
@@ -24,7 +24,7 @@ const handleSignUp = async (req, res) => {
 const handleLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    if ((!email, !password)) {
+    if (!email || !password) {
       return res.status(400).json({ message: "All fields required" });
     }
     const user = await User.findOne({ email });
@@ -34,12 +34,20 @@ const handleLogin = async (req, res) => {
     if (user.password !== password) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
-    const token = generateToken(user._id);
+    const token = generateToken(user._id, user.role);
     console.log("Token", token);
-    return res.status(200).json({ message: "Login Successfull", token });
+    return res.status(200).json({
+      message: "Login Successfull",
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+      },
+    });
   } catch (error) {
     return res.status(500).json({ error: "Error Logging In" });
   }
 };
 
-module.exports = { handleSignUp, handleLogin };
+module.exports = { handleSignUpUser, handleLogin };

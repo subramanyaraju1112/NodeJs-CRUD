@@ -6,7 +6,7 @@ const createTask = async (req, res) => {
     return res.status(400).json({ message: "Task name is required" });
   }
   try {
-    const task = await Task.create({ taskName });
+    const task = await Task.create({ taskName, userId: req.user.id });
     res.status(201).json({ message: "Task created successfully", task });
   } catch (error) {
     res.status(500).json({ message: "Error creating task", error });
@@ -15,10 +15,17 @@ const createTask = async (req, res) => {
 
 const getAllTasks = async (req, res) => {
   try {
-    const tasks = await Task.find();
-    res.status(200).json({ message: "Tasks fetched successfully", tasks });
+    const tasks = await Task.find({ userId: req.user.id });
+    if (tasks.length === 0) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+    return res
+      .status(200)
+      .json({ message: "Tasks fetched successfully", tasks });
   } catch (error) {
-    res.status(500).json({ message: "Error getting tasks", error });
+    return res
+      .status(500)
+      .json({ message: "Error getting tasks", error: error.message });
   }
 };
 
@@ -26,13 +33,18 @@ const updateTask = async (req, res) => {
   try {
     const { id } = req.params;
     const { taskName } = req.body;
-    const task = await Task.findByIdAndUpdate(id, { taskName }, { new: true });
-    if (!task) {
+    const tasks = await Task.findByIdAndUpdate(
+      { _id: id, userId: req.user.id },
+      { taskName },
+      { new: true }
+    );
+    console.log("Tasks", tasks);
+    if (!tasks) {
       return res.status(404).json({ message: "Task not found" });
     }
     res
       .status(200)
-      .json({ message: "Task updated successfully", updatedTask: task });
+      .json({ message: "Task updated successfully", updatedTask: tasks });
   } catch (error) {
     res
       .status(500)
@@ -57,4 +69,4 @@ const deleteTask = async (req, res) => {
   }
 };
 
-module.exports = { createTask, getAllTasks, updateTask , deleteTask};
+module.exports = { createTask, getAllTasks, updateTask, deleteTask };
